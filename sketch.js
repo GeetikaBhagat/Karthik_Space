@@ -10,8 +10,10 @@ var left_but;
 var right_but;
 var reset_but;
 var start_but;
+var next_but;
 var boss_ufo;
 var space;
+var coin;
 
 //declare the variables for the images.
 var ufo_img;
@@ -22,18 +24,22 @@ var right_but_img;
 var shoot_but_img;
 var reset_but_img;
 var boss_ani;
+var coin_img;
 var start_but_img;
+var next_but_img;
 var space_back;
 
 //declare the variables for the text.
 var title;
 var win1;
 var press;
+var press_2;
 
 //declare the variables for the groups.
 var ufoGroup;
 var bulletGroup1;
 var bulletGroup;
+var coinGroup;
 
 //gamestate.
 var gameState = "start";
@@ -52,10 +58,16 @@ var score = 0;
 var wave = 1;
 
 //timer for wave 3.
-var timer = 25;
+var timer = 10;
 
-//level
+//level.
 var level = 1;
+
+//lives.
+var lives = 4;
+
+//coins.
+var coins = 0;
 
 // preload Function
 function preload() {
@@ -69,6 +81,8 @@ function preload() {
   shoot_but_img = loadImage("Images/shoot_but.png")
   reset_but_img = loadImage("Images/Reset_but.png");
   start_but_img = loadImage("Images/start_but.png");
+  next_but_img = loadImage("Images/next.png");
+  coin_img = loadImage("Images/coin.png");
   space_back = loadImage("Images/space.jpg");
   boss_ani = loadAnimation("Images/boss.png", "Images/boss1.png", "Images/boss2.png");
 
@@ -95,12 +109,14 @@ function setup() {
   bulletGroup = createGroup();
   //enemy bullet group.
   bulletGroup1 = createGroup();
+  //coin group.
+  coinGroup = createGroup();
 
 
   //create a space sprite with image.
   //set it as background.
   //move it upwards.
-  space = createSprite(windowWidth - windowWidth, windowHeight - windowHeight, windowWidth, windowHeight);
+  space = createSprite(0, 0, width, height);
   space.addImage(space_back);
   space.scale = 2
   space.velocityY = 4;
@@ -108,54 +124,60 @@ function setup() {
 
   //create buttons.
   //create a left button sprite and set an image.
-  left_but = createSprite(windowWidth - 1470, windowHeight - 150, 20, 20);
+  left_but = createSprite(width - 1470, height - 150, 20, 20);
   left_but.scale = 0.4;
   left_but.addImage(left_but_img)
 
   //create a right button sprite and set an image.
-  right_but = createSprite(windowWidth - 75, windowHeight - 150, 20, 20);
+  right_but = createSprite(width - 75, height - 150, 20, 20);
   right_but.scale = 0.4;
   right_but.addImage(right_but_img)
 
   //create a shoot button sprite and set an image.
-  shoot_but = createSprite(windowWidth - 200, windowHeight - 100, 30, 30);
+  shoot_but = createSprite(width - 200, height - 100, 30, 30);
   shoot_but.scale = 0.1;
   shoot_but.addImage(shoot_but_img)
 
   //create a start button sprite and set an image.
   //make it invisible.
-  start_but = createSprite(windowWidth / 2, windowHeight - 200, 30, 30);
+  start_but = createSprite(width / 2, height - 200, 30, 30);
   start_but.scale = 0.3;
   start_but.addImage(start_but_img);
   start_but.visible = false;
 
-  reset_but = createSprite(windowWidth - 1500, windowHeight - 750, 20, 20);
+  reset_but = createSprite(width - 1500, height - 750, 20, 20);
   reset_but.addImage(reset_but_img);
   reset_but.scale = 0.2;
 
+  next_but = createSprite(width / 2, height - 200, 30, 30);
+  next_but.scale = 0.6;
+  next_but.addImage(next_but_img);
+  next_but.visible = false;
+
   //create the characters.
   //create the spaceship sprite [PC].
-  spaceship = createSprite(windowWidth / 2, windowHeight - 125, 10, 10);
+  spaceship = createSprite(width / 2, height - 125, 10, 10);
   spaceship.scale = 0.3;
+  spaceship.setCollider("rectangle", 0, 0, 350, 300)
   spaceship.addImage(spaceship_img);
 
   //create ufos.
   //ufos for wave 1.
 
   //first ufo.
-  ufo1 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight), 20, 20);
+  ufo1 = createSprite(random(0, width), random(0, height), 20, 20);
   ufo1.scale = 0.3;
   ufoGroup.add(ufo1);
   ufo1.addImage(ufo_img);
 
   //second ufo.
-  ufo2 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight - 500), 20, 20);
+  ufo2 = createSprite(random(0, width), random(0, height - 500), 20, 20);
   ufo2.scale = 0.3;
   ufoGroup.add(ufo2);
   ufo2.addImage(ufo_img);
 
   //third ufo.
-  ufo3 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight - 500), 20, 20);
+  ufo3 = createSprite(random(0, width), random(0, height - 500), 20, 20);
   ufo3.scale = 0.3;
   ufoGroup.add(ufo3);
   ufo3.addImage(ufo_img);
@@ -163,57 +185,63 @@ function setup() {
   // ufos for wave 2.
 
   //fourth ufo.
-  ufo4 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight - 500), 20, 20);
+  ufo4 = createSprite(random(0, width), random(0, height - 500), 20, 20);
   ufo4.scale = 0.3;
   ufoGroup.add(ufo4);
   ufo4.addImage(ufo_img);
 
   //fifth ufo.
-  ufo5 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight - 500), 20, 20);
+  ufo5 = createSprite(random(0, width), random(0, height - 500), 20, 20);
   ufo5.scale = 0.3;
   ufoGroup.add(ufo5);
   ufo5.addImage(ufo_img);
 
   //sixth ufo.
-  ufo6 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight - 500), 20, 20);
+  ufo6 = createSprite(random(0, width), random(0, height - 500), 20, 20);
   ufo6.scale = 0.3;
   ufoGroup.add(ufo6);
   ufo6.addImage(ufo_img);
 
   //seventh ufo.
-  ufo7 = createSprite(random(windowWidth - windowWidth, windowWidth), random(windowHeight - windowHeight, windowHeight - 500), 20, 20);
+  ufo7 = createSprite(random(0, width), random(0, height - 500), 20, 20);
   ufo7.scale = 0.3;
   ufoGroup.add(ufo7);
   ufo7.addImage(ufo_img);
 
   //UFO for wave 3.
   //boss ufo, set an animation.
-  boss_ufo = createSprite(windowWidth / 2, windowHeight - 650, 20, 20);
+  boss_ufo = createSprite(width / 2, height - 650, 20, 20);
   ufoGroup.add(boss_ufo);
   boss_ufo.scale = 0.5
   boss_ufo.addAnimation("animation", boss_ani);
-
 
   //create the text sprites.
 
   //title of the game.
   title = createDiv("BattleShip!!_👾");
-  title.position(windowWidth - 1300, windowHeight - 700);
+  title.position(width - 1300, height - 700);
   title.style('font-size', '150px');
   title.style('color', 'red');
 
   //instruction.
   press = createDiv("Press_start_to_play!");
-  press.position(windowWidth - 1000, windowHeight - 450);
+  press.position(width - 1000, height - 450);
   press.style('font-size', '50px');
   press.style('color', 'yellow');
 
   //congrats for winning the first level.
   win1 = createDiv("GOOD!! YOU DEFEATED THE BOSS. LET'S GO TO THE NEXT LEVEL!");
-  win1.position(windowWidth - 1500, windowHeight - 500);
+  win1.position(width - 1500, height - 600);
   win1.style('border', '5px solid red');
   win1.style('font-size', '75px');
   win1.style('color', 'green');
+
+  //instruction.
+  press_2 = createDiv("Press_next_to_go_to_the_next_level!");
+  press_2.position(width - 1100, height - 400);
+  press_2.style('font-size', '50px');
+  press_2.style('color', 'yellow');
+  press_2.hide();
 
   //play the background sound effects.
   back.play();
@@ -230,10 +258,13 @@ function draw() {
   //always hide the congrats text.
   win1.hide();
 
+  //spaceship.x = mouseX;
+
   //create the scrolling background.
-  if (space.y > windowHeight) {
+  if (space.y > height) {
     space.y = space.height / 2;
   }
+  console.log(lives);
 
   //move the spacship left if mouse is pressed over left button.
   if (mousePressedOver(left_but)) {
@@ -274,18 +305,12 @@ function draw() {
       gameState = "play";
       but_pre.play();
     }
-    for (touch in touches) {
-      if (touch[0].x === windowWidth / 2 && touch[0].y === windowHeight - 200) {
-        gameState = "play";
-        but_pre.play();
-      }
-    }
 
   }
   //  -----------------------------------------> level 1 <--------------------------------------------------------
 
   //  -----------------------------------------> wave 1 <---------------------------------------------------------
-  else if (gameState === "play") {
+  if (gameState === "play") {
 
     //hide the instruction and title of the game.
     title.hide();
@@ -305,7 +330,15 @@ function draw() {
     ufo3.visible = true;
     spaceship.visible = true;
 
-
+    //spawnCoins.
+    if (frameCount % 60 === 0) {
+      spawnCoins();
+    }
+    //treasure should increase when spaceship touches the coins.
+    if (coinGroup.isTouching(spaceship)) {
+      coinGroup.destroyEach();
+      coins++
+    }
     //if the shoot button is pressed, bullets should come.
     if (mousePressedOver(shoot_but)) {
       bullet_fun();
@@ -313,22 +346,23 @@ function draw() {
 
     //moving the ufos.
     //move the first ufo in random direction.
-    ufo1.x = random(windowWidth - windowWidth, windowWidth - 1000);
-    ufo1.y = random(windowHeight - windowHeight, windowHeight / 2);
+    ufo1.x = random(0, width - 1000);
+    ufo1.y = random(0, height / 2);
 
     //move the second ufo in random direction.
-    ufo2.x = random(windowWidth - 1000, windowWidth - 500);
-    ufo2.y = random(windowHeight - windowHeight, windowHeight / 2);
+    ufo2.x = random(width - 1000, width - 500);
+    ufo2.y = random(0, height / 2);
 
     //move the third ufo in random direction.
-    ufo3.x = random(windowWidth - 500, windowWidth);
-    ufo3.y = random(windowHeight - windowHeight, windowHeight / 2);
+    ufo3.x = random(width - 500, width);
+    ufo3.y = random(0, height / 2);
 
-
-    //if the bullets coming from the ufos touches spaceship, game should end.
     if (bulletGroup1.isTouching(spaceship)) {
-      gameState = "end";
-      ufo_def.play();
+      bulletGroup1.destroyEach();
+      lives--;
+      gameState = 'pause';
+     
+      // isTouch();
     }
 
     // if the spaceship shoots the ufos, ufos should destroy and score should increase.
@@ -350,15 +384,36 @@ function draw() {
       bulletGroup.destroyEach();
       ufo_def.play();
     }
+    // setting a timer.
+    if (frameCount % 60 == 0 && timer > 0) {
+      timer--;
+    }
+    // the timer ends,the game should end.
+    if (timer === 0) {
+      gameState = "end";
+    }
 
     //if the score is 6, the next wave should come.
     if (score === 6) {
       wave++
+      timer = 20;
       gameState = "wave2";
     }
 
 
     // ------------------------------------------------> wave 2 <-------------------------------------------------
+  }  if (gameState === 'pause') {
+    console.log(lives)
+    if (lives === 0) {
+      gameState = 'end';
+    }
+    else {
+      console.log('lost one life')
+      // setInterval(alertfn, 1000);
+      gameState = 'play'
+    }
+
+
   } else if (gameState === "wave2") {
 
     //the boss ufo should be invisible in wave 2.
@@ -423,13 +478,22 @@ function draw() {
     if (ufo7.y >= windowHeight / 2 || ufo7.y <= windowHeight - windowHeight) {
       ufo7.y = random(windowHeight - windowHeight, windowHeight / 2);
     }
-
+    //spawnCoins.
+    if (frameCount % 60 === 0) {
+      spawnCoins();
+    }
+    //treasure should increase when spaceship touches the coins.
+    if (coinGroup.isTouching(spaceship)) {
+      coinGroup.destroyEach();
+      coins++
+    }
     //if the shoot button is pressed, bullets should come.
-    if (mousePressedOver(shoot_but)) {
+    if (keyWentDown("space")) {
       bullet_fun();
     }
     //if the bullets coming from the ufos touches spaceship, game should end.
     if (bulletGroup1.isTouching(spaceship)) {
+      bulletGroup1.destroyEach();
       gameState = "end";
       ufo_def.play();
     }
@@ -460,9 +524,19 @@ function draw() {
       ufo_def.play();
     }
 
+    // setting a timer.
+    if (frameCount % 60 == 0 && timer > 0) {
+      timer--;
+    }
+    // the timer ends,the game should end.
+    if (timer === 0) {
+      gameState = "end";
+    }
+
     //if the score is 18, the next wave should come.
     if (score === 18) {
       wave++
+      timer = 25;
       gameState = "wave3";
     }
 
@@ -477,7 +551,7 @@ function draw() {
     boss_ufo.visible = true;
 
     //if the shoot button is pressed, bullets should come.
-    if (mousePressedOver(shoot_but)) {
+    if (keyWentDown("space")) {
       bullet_boss_fun()
     }
 
@@ -511,7 +585,15 @@ function draw() {
     if (mousePressedOver(right_but)) {
       spaceship.x = spaceship.x + 8;
     }
-
+    //spawnCoins.
+    if (frameCount % 60 === 0) {
+      spawnCoins();
+    }
+    //treasure should increase when spaceship touches the coins.
+    if (coinGroup.isTouching(spaceship)) {
+      coinGroup.destroyEach();
+      coins++
+    }
     //score should increase by 1 if the spaceship shoots the boss ufo.
     if (bulletGroup.isTouching(boss_ufo)) {
       score = score + 1;
@@ -529,6 +611,7 @@ function draw() {
 
     //the game should end if the bullets from the ufo touches the spaceship.
     if (bulletGroup1.isTouching(spaceship)) {
+      bulletGroup1.destroyEach();
       gameState = "end";
       ufo_def.play();
     }
@@ -555,18 +638,35 @@ function draw() {
     boss_ufo.destroy();
     bulletGroup.destroyEach();
 
-    // level increases.
-    level++
-
     //congrats text is shown.
     win1.show();
 
+    //second instruction is shown.
+    press_2.show();
+
+    //next button should be visible.
+    next_but.visible = true;
+
+    if (mousePressedOver(next_but)) {
+
+      gameState = "wave1_2";
+
+      // level increases.
+      level = level + 1;
+    }
 
     // ------------------------------------------------> end <------------------------------------------------
+  } else if (gameState === "wave1_2") {
+
+    next_but.destroy();
+    press_2.hide();
+
+
   } else if (gameState === "end") {
 
     //the ufos and the bullets are destroyed .
     ufoGroup.destroyEach();
+    coinGroup.destroyEach();
     bulletGroup.destroyEach();
 
     //spaceship should get destroyed.
@@ -605,7 +705,10 @@ function draw() {
   text("Timer: " + timer, windowWidth - 710, windowHeight - 740);
   //level.
   text("LEVEL: " + level, windowWidth - 900, windowHeight - 740);
-
+  //lives.
+  text("LIVES: " + lives, windowWidth - 1100, windowHeight - 740);
+  //coins.
+  text("Treasure: " + coins, windowWidth - 1300, windowHeight - 740);
 }
 
 
@@ -619,7 +722,7 @@ function bullet_fun() {
   bullet.lifetime = 200;
   bulletGroup.add(bullet);
 
-  //create a bullet sprite from the ufos.
+  //create a bullet sprite from the ufos. 
   bullet1 = createSprite(random(windowWidth - windowWidth, windowWidth), windowHeight - 790, 7, 12);
   bullet1.shapeColor = "red";
   bullet1.velocityY = 9;
@@ -630,8 +733,29 @@ function bullet_fun() {
   gunshot.play();
 }
 
+function spawnCoins() {
 
+  coin = createSprite(random(0, windowWidth), 0, 10, 10);
+  coin.shapeColor = "yellow";
+  coin.velocityY = 7;
+  coin.scale = 0.1;
+  coin.addImage(coin_img);
+  coinGroup.add(coin);
 
+}
+function isTouch() {
+  //if the bullets coming from the ufos touches spaceship, game should end.
+  // gameState = "end";
+  lives--
+  console.log(lives);
+  ufo_def.play();
+
+  if (lives !== 0 && lives <= 4) {
+    gameState = "play";
+  } else if (lives <= 0) {
+    gameState = "start";
+  }
+}
 
 //bullet function for the boss wave.
 function bullet_boss_fun() {
@@ -658,4 +782,7 @@ function reset() {
   earth.destroy();
   bulletGroup1.destroyEach();
 
+}
+function alertfn(){
+  text('life lost. Press C to continue',windowWidth/2,windowHeight/2)
 }
